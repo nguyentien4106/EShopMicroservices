@@ -3,6 +3,7 @@ version: '3.4'
 services:
   catalogdb:
     container_name: catalogdb
+    image: postgres:16.2
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
