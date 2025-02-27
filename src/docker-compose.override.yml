@@ -1,0 +1,25 @@
+version: '3.4'
+
+services:
+  catalogdb:
+    container_name: catalogdb
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=CatalogDb
+    restart: always
+    ports:
+        - "5432:5432"
+    volumes:
+      - postgres_catalog:/var/lib/postgresql/data/
+  catalogdb-ui:
+    image: dpage/pgadmin4:latest
+    container_name: catalogdb-ui
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: nguyenvantien0620@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: 1
+    ports:
+      - "7070:80"
+    depends_on:
+      - catalogdb
