@@ -11,7 +11,8 @@ services:
     ports:
         - "5432:5432"
     volumes:
-      - postgres_catalog:/var/lib/postgresql/data/
+      - postgres_catalog:/var/lib/postgresql/data/ 
+      
   basketdb:
     container_name: basketdb
     environment:
@@ -22,24 +23,13 @@ services:
     ports:
         - "5433:5432"
     volumes:
-      - postgres_basket:/var/lib/postgresql/data/
+      - postgres_basket:/var/lib/postgresql/data/ 
+
   distributedcache:
     container_name: distributedcache
     restart: always
     ports:
       - "6379:6379"
-  
-  catalogdb-ui:
-    image: dpage/pgadmin4:latest
-    container_name: catalogdb-ui
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: nguyenvantien0620@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: 1
-    ports:
-      - "7070:80"
-    depends_on:
-      - catalogdb
 
   catalog.api:
     environment:
@@ -47,7 +37,7 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
       - ConnectionStrings__Database=Server=catalogdb;Port=5432;Database=CatalogDb;User Id=postgres;Password=postgres;Include Error Detail=true
-    depends_on: 
+    depends_on:
       - catalogdb
     ports:
       - "6000:8080"
@@ -61,12 +51,13 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
-      - ConnectionStrings__Database=Server=basketdb;Port=5433;Database=BasketDb;User Id=postgres;Password=postgres;Include Error Detail=true
+      - ConnectionStrings__Database=Server=basketdb;Port=5432;Database=BasketDb;User Id=postgres;Password=postgres;Include Error Detail=true
+      - ConnectionStrings__Redis=distributedcache:6379
       - GrpcSettings__DiscountUrl=https://discount.grpc:8081
-    depends_on: 
+    depends_on:
       - basketdb
       - distributedcache
-      - discount.grpc 
+      - discount.grpc
     ports:
       - "6001:8080"
       - "6061:8081"
