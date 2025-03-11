@@ -2,7 +2,7 @@ using BuildingBlocks.Messaging.Events;
 using MassTransit;
 using Ordering.Application.Orders.Commands.CreateOrder;
 
-namespace Ordering.Application.Orders.EventHandlers.Intergration;
+namespace Ordering.Application.Orders.EventHandlers.Integration;
 
 public class BasketCheckoutEventHandler(ISender sender, ILogger<BasketCheckoutEventHandler> logger) : IConsumer<BasketCheckoutEvent>
 {
