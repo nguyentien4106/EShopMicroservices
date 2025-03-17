@@ -1,4 +1,6 @@
 using Basket.API.Data;
+using BuildingBlocks.Auth.AuthConfiguration;
+using BuildingBlocks.Auth.Middlewares;
 using BuildingBlocks.Behaviors;
 using BuildingBlocks.Exceptions.Handler;
 using BuildingBlocks.Messaging.MassTransit;
@@ -14,51 +16,58 @@ var redisConnectionString = builder.Configuration.GetConnectionString("Redis")!;
 var databaseConnectionString = builder.Configuration.GetConnectionString("Database")!;
 
 builder.Services.AddCarter();
-
+builder.Services.AddJwtServices(builder.Configuration);
 builder.Services.AddMediatR(config =>
-{
-    config.RegisterServicesFromAssembly(assembly);
-    config.AddOpenBehavior(typeof(ValidationBehavior<,>));
-    config.AddOpenBehavior(typeof(LoggingBehavior<,>));
-});
+    {
+        config.RegisterServicesFromAssembly(assembly);
+        config.AddOpenBehavior(typeof(ValidationBehavior<,>));
+        config.AddOpenBehavior(typeof(LoggingBehavior<,>));
+    });
 
 builder.Services.AddValidatorsFromAssembly(assembly);
 
 builder.Services.AddMarten(opts =>
-{
-    opts.Connection(databaseConnectionString);
-    opts.Schema.For<ShoppingCart>().Identity(p => p.UserName);
-}).UseLightweightSessions();
+    {
+        opts.Connection(databaseConnectionString);
+        opts.Schema.For<ShoppingCart>().Identity(p => p.UserName);
+    }).UseLightweightSessions();
 
 builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 builder.Services.Decorate<IBasketRepository, CachedBasketRepository>();
 builder.Services.AddStackExchangeRedisCache(opts =>
-{
-    opts.Configuration = redisConnectionString;
-});
-
-builder.Services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(opts =>
-{
-    opts.Address = new Uri(builder.Configuration["GrpcSettings:DiscountUrl"]!);
-}).ConfigurePrimaryHttpMessageHandler(() =>
-{
-    var handler = new HttpClientHandler()
     {
-        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-    };
+        opts.Configuration = redisConnectionString;
+    });
 
-    return handler;
-});
+builder.Services
+    .AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(opts =>
+    {
+        opts.Address = new Uri(builder.Configuration["GrpcSettings:DiscountUrl"]!);
+    })
+    .ConfigurePrimaryHttpMessageHandler(() =>
+    {
+        var handler = new HttpClientHandler()
+        {
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+        };
+
+        return handler;
+    });
 
 builder.Services.AddMessageBroker(builder.Configuration);
 
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
-builder.Services.AddHealthChecks()
+builder.Services
+    .AddHealthChecks()
     .AddNpgSql(databaseConnectionString)
     .AddRedis(redisConnectionString);
+
 var app = builder.Build();
 
+// app.UseJwtServices();
+app.UseMiddleware<AuthenticateMiddleware>();
+app.UseAuthorization();
 app.MapCarter();
 
 app.MapGet("/", () => "Basket API");
