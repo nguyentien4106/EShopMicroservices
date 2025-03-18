@@ -1,6 +1,5 @@
 using Basket.API.Data;
 using BuildingBlocks.Auth.AuthConfiguration;
-using BuildingBlocks.Auth.Middlewares;
 using BuildingBlocks.Behaviors;
 using BuildingBlocks.Exceptions.Handler;
 using BuildingBlocks.Messaging.MassTransit;
@@ -16,7 +15,7 @@ var redisConnectionString = builder.Configuration.GetConnectionString("Redis")!;
 var databaseConnectionString = builder.Configuration.GetConnectionString("Database")!;
 
 builder.Services.AddCarter();
-builder.Services.AddJwtServices(builder.Configuration);
+builder.Services.AddJwtServices();
 builder.Services.AddMediatR(config =>
     {
         config.RegisterServicesFromAssembly(assembly);
@@ -65,9 +64,8 @@ builder.Services
 
 var app = builder.Build();
 
-// app.UseJwtServices();
-app.UseMiddleware<AuthenticateMiddleware>();
-app.UseAuthorization();
+app.UseJwtServices();
+
 app.MapCarter();
 
 app.MapGet("/", () => "Basket API");

@@ -32,7 +32,7 @@ public static class TokenUtils
             issuer: appSettings.Issuer,
             audience: appSettings.Audience,
             claims: userClaims,
-            expires: DateTime.UtcNow.AddMinutes(appSettings.AccessTokenLifetimeMinutes),
+            expires: DateTime.UtcNow.AddSeconds(appSettings.AccessTokenExpirationMinutes),
             signingCredentials: signInCredentials
         );
         
@@ -47,5 +47,24 @@ public static class TokenUtils
         await userManager.SetAuthenticationTokenAsync(user, jwtSettings.RefreshTokenProvider, refreshTokenKey, refreshToken);
         
         return refreshToken;
+    }
+    
+    public static ClaimsPrincipal GetPrincipalFromExpiredToken(JwtSettings appSettings, string token)
+    {
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidAudience = appSettings.Audience,
+            ValidIssuer = appSettings.Issuer,
+            ValidateLifetime = false,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSettings.SecretKey))
+        };
+
+        var principal = new JwtSecurityTokenHandler().ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+        if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            throw new SecurityTokenException("GetPrincipalFromExpiredToken Token is not validated");
+
+        return principal;
     }
 }

@@ -10,8 +10,9 @@ public class JwtSettings
     
     public string Authority { get; set; } = default!;
     
-    public int AccessTokenLifetimeMinutes { get; set; } = 10;
+    public required int AccessTokenExpirationMinutes { get; set; }
 
-    public int RefreshTokenLifetimeDays { get; set; } = 10;
-    public string RefreshTokenProvider { get; set; } = "Default";
+    public required int RefreshTokenExpirationDays { get; set; }
+    
+    public required string RefreshTokenProvider { get; set; } = "Default";
 }

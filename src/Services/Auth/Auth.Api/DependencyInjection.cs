@@ -19,7 +19,7 @@ public static class DependencyInjection
         services.AddExceptionHandler<CustomExceptionHandler>();
         services.AddHealthChecks();
         services.AddIdentityServices(configuration);
-        services.AddJwtServices(configuration);
+        services.AddJwtServices();
 
         return services;
     }
@@ -48,7 +48,7 @@ public static class DependencyInjection
         
         services.Configure<DataProtectionTokenProviderOptions>(opts =>
         {
-            opts.TokenLifespan = TimeSpan.FromDays(int.Parse(configuration["JwtSettings:RefreshTokenExpirationDays"]));
+            opts.TokenLifespan = TimeSpan.FromDays(int.TryParse(configuration["JwtSettings:RefreshTokenExpirationDays"], out int days)  ? days : 10);
         });
         
         

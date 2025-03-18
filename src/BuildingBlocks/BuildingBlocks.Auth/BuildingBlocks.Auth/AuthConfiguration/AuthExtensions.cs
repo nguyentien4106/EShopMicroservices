@@ -11,9 +11,10 @@ namespace BuildingBlocks.Auth.AuthConfiguration;
 
 public static class AuthExtensions
 {
-    public static IServiceCollection AddJwtServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddJwtServices(this IServiceCollection services)
     {
-        var jwtSettings = configuration.GetSection(nameof(JwtSettings)).Get<JwtSettings>() ?? throw new AuthenticationFailureException("JWT settings not found.");
+        var jwtSettings = JwtSettingsReader.GetJwtSettings();
+        
         services
         .AddAuthentication(opts =>
         {
@@ -25,22 +26,11 @@ public static class AuthExtensions
             opts.Audience = jwtSettings.Audience;
             opts.Authority = jwtSettings.Authority;
             opts.RequireHttpsMetadata = false;
-            opts.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                RequireExpirationTime = true,
-                ValidIssuer = jwtSettings.Issuer,
-                ValidAudience = jwtSettings.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
-                ClockSkew = TimeSpan.FromSeconds(0)
-            };
+            opts.TokenValidationParameters = Constants.Constants.GetTokenValidationParameters(jwtSettings);
         });
         
         services.AddAuthorization();
-        services.AddSingleton(jwtSettings);
+        services.AddSingleton<JwtSettings>(jwtSettings);
         
         return services;
     }

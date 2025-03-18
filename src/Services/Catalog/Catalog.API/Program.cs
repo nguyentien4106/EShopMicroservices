@@ -1,3 +1,4 @@
+using BuildingBlocks.Auth.AuthConfiguration;
 using BuildingBlocks.Exceptions.Handler;
 using Catalog.API.Data;
 using HealthChecks.UI.Client;
@@ -7,6 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 var assembly = typeof(Program).Assembly;
 var connectionString = builder.Configuration.GetConnectionString("Database")!;
 
+builder.Services.AddCarter();
+
+builder.Services.AddJwtServices();
+
 builder.Services.AddMediatR(config =>
 {
     config.RegisterServicesFromAssembly(assembly);
@@ -15,8 +20,6 @@ builder.Services.AddMediatR(config =>
 });
 
 builder.Services.AddValidatorsFromAssembly(assembly);
-
-builder.Services.AddCarter();
 
 builder.Services.AddMarten(opts =>
 {
@@ -33,6 +36,8 @@ builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 builder.Services.AddHealthChecks().AddNpgSql(connectionString);
 
 var app = builder.Build();
+
+app.UseJwtServices();
 
 app.MapCarter();
 
