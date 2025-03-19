@@ -30,7 +30,7 @@ public static class AuthExtensions
         });
         
         services.AddAuthorization();
-        services.AddSingleton<JwtSettings>(jwtSettings);
+        services.AddSingleton(jwtSettings);
         
         return services;
     }

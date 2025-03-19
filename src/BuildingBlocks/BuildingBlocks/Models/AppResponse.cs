@@ -1,6 +1,6 @@
 namespace BuildingBlocks.Models;
 
-public class AppResponse<T> where T : class
+public class AppResponse<T>
 {
     public T? Data { get; set; }
     
@@ -31,7 +31,7 @@ public class AppResponse<T> where T : class
         return new AppResponse<T>().SetSuccess(data, message);
     }
 
-    public static AppResponse<T> Error(string message, T data = null)
+    public static AppResponse<T> Error(string message, T data = default)
     {
         return new AppResponse<T>().SetError(message, data);
     }

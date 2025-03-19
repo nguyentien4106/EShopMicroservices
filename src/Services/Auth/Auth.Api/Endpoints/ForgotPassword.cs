@@ -1,3 +1,5 @@
+using Auth.Application.Auth.Commands.ForgotPassword;
+using BuildingBlocks.Models;
 using Carter;
 
 namespace Auth.Api.Endpoints;
@@ -6,9 +8,16 @@ public class ForgotPassword : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/auth/forgot-password", async (ISender sender) =>
+        app.MapPost("/auth/forgot-password", async (string email, ISender sender) =>
         {
-            
-        });
+            var command = new ForgotPasswordCommand(email);
+            var result = await sender.Send(command);
+
+            return Results.Ok(result);
+        })
+            .WithName("forgot-password")
+            .Produces<AppResponse<bool>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .WithDescription("forgot password");
     }
 }
