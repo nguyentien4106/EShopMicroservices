@@ -50,7 +50,9 @@ public static class DatabaseExtensions
             {
                 UserName = "admin@example.com",
                 Email = "admin@example.com",
-                EmailConfirmed = true
+                EmailConfirmed = true,
+                FirstName = "Admin",
+                LastName = "User",
             };
 
             var passwordHasher = new PasswordHasher<IdentityUser>();
@@ -72,7 +74,9 @@ public static class DatabaseExtensions
             {
                 UserName = "user@example.com",
                 Email = "user@example.com",
-                EmailConfirmed = true
+                EmailConfirmed = true,
+                FirstName = "Normal",
+                LastName = "User",
             };
 
             var passwordHasher = new PasswordHasher<IdentityUser>();
